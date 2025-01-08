@@ -44,7 +44,7 @@ const useColumnDefs = (
         },
       },
       {
-        headerName: "Value",
+        headerName: "",
         field: "value",
         cellRenderer: TableNodeCellRender,
         valueGetter: (params: ValueGetterParams) => {
@@ -60,6 +60,7 @@ const useColumnDefs = (
         minWidth: 340,
         flex: 1,
         resizable: false,
+        autoHeight: true,
         cellClass: "no-border",
       },
     ];
