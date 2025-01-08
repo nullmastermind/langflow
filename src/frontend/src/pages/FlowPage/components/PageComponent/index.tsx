@@ -18,6 +18,7 @@ import { track } from "@/customization/utils/analytics";
 import useAutoSaveFlow from "@/hooks/flows/use-autosave-flow";
 import useUploadFlow from "@/hooks/flows/use-upload-flow";
 import { useAddComponent } from "@/hooks/useAddComponent";
+import { getLayoutedNodes } from "@/utils/layoutUtils";
 import { nodeColorsName } from "@/utils/styleUtils";
 import { cn, isSupportedNodeTypes } from "@/utils/utils";
 import {
@@ -564,6 +565,17 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
             {!view && (
               <>
                 <CanvasControls>
+                  <CustomControlButton
+                    iconName="land-plot"
+                    tooltipText="Reorder Nodes"
+                    onClick={() => {
+                      getLayoutedNodes(nodes, edges).then((layoutedNodes) => {
+                        setNodes(layoutedNodes);
+                      });
+                    }}
+                    iconClasses="text-primary"
+                    testId="reorder_nodes"
+                  />
                   <CustomControlButton
                     iconName="sticky-note"
                     tooltipText="Add Note"

@@ -1,19 +1,13 @@
-import { NODE_HEIGHT, NODE_WIDTH } from "@/constants/constants";
+import { NODE_SPACING } from "@/constants/constants";
 import { AllNodeType, EdgeType } from "@/types/flow";
-import ELK, { ElkNode } from "elkjs/lib/elk.bundled.js";
+import ELK from "elkjs/lib/elk.bundled.js";
 import { cloneDeep } from "lodash";
 
 const layoutOptions = {
   "elk.algorithm": "layered",
-  "elk.direction": "RIGHT",
-  "elk.components.direction": "DOWN",
-  "elk.layered.spacing.edgeNodeBetweenLayers": "40",
-  "elk.spacing.nodeNode": "40",
-  "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
-  "elk.separateConnectedComponents": "true",
-  "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
-  "elk.spacing.componentComponent": `${NODE_WIDTH}`,
-  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.spacing.nodeNodeBetweenLayers": (NODE_SPACING * 2).toString(),
+  "elk.spacing.nodeNode": NODE_SPACING.toString(),
+  "org.eclipse.elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
 };
 const elk = new ELK();
 
@@ -22,59 +16,60 @@ export const getLayoutedNodes = async (
   nodes: AllNodeType[],
   edges: EdgeType[],
 ): Promise<AllNodeType[]> => {
-  const graph = {
+  const elkGraph = {
     id: "root",
     layoutOptions,
-    children: cloneDeep(nodes).map((n) => {
-      const targetPorts = edges
-        .filter((e) => e.source === n.id)
-        .map((e) => ({
-          id: e.sourceHandle,
-          properties: {
-            side: "EAST",
-          },
-        }));
-
-      const sourcePorts = edges
-        .filter((e) => e.target === n.id)
-        .map((e) => ({
-          id: e.targetHandle,
-          properties: {
-            side: "WEST",
-          },
-        }));
-      return {
-        id: n.id,
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-        // ⚠️ we need to tell elk that the ports are fixed, in order to reduce edge crossings
-        properties: {
-          "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-        },
-        // we are also passing the id, so we can also handle edges without a sourceHandle or targetHandle option
-        ports: [{ id: n.id }, ...targetPorts, ...sourcePorts],
-      };
-    }) as ElkNode[],
-    edges: edges.map((e) => ({
-      id: e.id,
-      sources: [e.sourceHandle || e.source],
-      targets: [e.targetHandle || e.target],
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: node.width,
+      height: node.height,
+      targetPosition: "left",
+      sourcePosition: "right",
+      labels: [{ text: node.id }],
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
     })),
   };
-  const layoutedGraph = await elk.layout(graph);
 
-  const layoutedNodes = nodes.map((node) => {
-    const layoutedNode = layoutedGraph.children?.find(
-      (lgNode) => lgNode.id === node.id,
-    );
+  const layout = await elk.layout(elkGraph);
 
-    return {
-      ...node,
-      position: {
-        x: layoutedNode?.x ?? 0,
-        y: layoutedNode?.y ?? 0,
-      },
-    };
+  // Find the smallest y-coordinate among all nodes
+  let minY = Infinity;
+  layout.children?.forEach((child) => {
+    if (typeof child.y === "number" && child.y < minY) {
+      minY = child.y;
+    }
   });
-  return layoutedNodes;
+
+  // Group nodes by x-coordinate
+  const nodesByX = {};
+  layout.children?.forEach((child) => {
+    if (typeof child.x !== "number") return;
+    const xCoord = Math.round(child.x); // Round to handle floating point imprecision
+    if (!nodesByX[xCoord]) {
+      nodesByX[xCoord] = [];
+    }
+    nodesByX[xCoord].push(child);
+  });
+
+  // Position nodes, handling overlaps
+  Object.values(nodesByX).forEach((nodesAtX: any) => {
+    let currentY = minY;
+    nodesAtX.forEach((child: any) => {
+      const index = nodes.findIndex((e) => e.id === child.id);
+      if (index > -1) {
+        nodes[index].position = {
+          x: child.x,
+          y: currentY,
+        };
+        // Update currentY for next node, adding a small gap of 20px between nodes
+        currentY += child.height + NODE_SPACING;
+      }
+    });
+  });
+
+  return cloneDeep(nodes);
 };
