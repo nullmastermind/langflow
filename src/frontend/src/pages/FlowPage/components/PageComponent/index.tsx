@@ -20,7 +20,7 @@ import useUploadFlow from "@/hooks/flows/use-upload-flow";
 import { useAddComponent } from "@/hooks/useAddComponent";
 import { getLayoutedNodes } from "@/utils/layoutUtils";
 import { nodeColorsName } from "@/utils/styleUtils";
-import { cn, isSupportedNodeTypes } from "@/utils/utils";
+import { cn, isMac, isSupportedNodeTypes } from "@/utils/utils";
 import {
   Background,
   Connection,
@@ -297,6 +297,7 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
   const groupAction = useShortcutsStore((state) => state.group);
   const cutAction = useShortcutsStore((state) => state.cut);
   const pasteAction = useShortcutsStore((state) => state.paste);
+  const reorderNodesAction = useShortcutsStore((state) => state.reorderNodes);
   //@ts-ignore
   useHotkeys(undoAction, handleUndo);
   //@ts-ignore
@@ -315,6 +316,8 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
   useHotkeys(deleteAction, handleDelete);
   //@ts-ignore
   useHotkeys("delete", handleDelete);
+  //@ts-ignore
+  useHotkeys(reorderNodesAction, handleReorderNodes);
 
   const onConnectMod = useCallback(
     (params: Connection) => {
@@ -521,6 +524,16 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
 
   const componentsToUpdate = useFlowStore((state) => state.componentsToUpdate);
 
+  function handleReorderNodes(e: KeyboardEvent) {
+    if (!isWrappedWithClass(e, "noflow")) {
+      e.preventDefault();
+      (e as unknown as Event).stopImmediatePropagation();
+      getLayoutedNodes(nodes, edges).then((layoutedNodes) => {
+        setNodes(layoutedNodes);
+      });
+    }
+  }
+
   return (
     <div className="h-full w-full bg-canvas" ref={reactFlowWrapper}>
       {showCanvas ? (
@@ -567,7 +580,7 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
                 <CanvasControls>
                   <CustomControlButton
                     iconName="land-plot"
-                    tooltipText="Reorder Nodes"
+                    tooltipText={`Reorder Nodes (${reorderNodesAction.replace("mod", isMac ? "⌘" : "Ctrl")})`}
                     onClick={() => {
                       getLayoutedNodes(nodes, edges).then((layoutedNodes) => {
                         setNodes(layoutedNodes);

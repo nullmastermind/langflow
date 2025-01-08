@@ -53,6 +53,7 @@ export const useShortcutsStore = create<shortcutsStoreType>((set, get) => ({
       get().setShortcuts(JSON.parse(savedShortcuts!));
     }
   },
+  reorderNodes: "mod+Shift+R",
 }));
 
 useShortcutsStore.getState().getShortcutsFromStorage();

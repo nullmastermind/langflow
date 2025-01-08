@@ -61,4 +61,5 @@ export type shortcutsStoreType = {
     }>,
   ) => void;
   getShortcutsFromStorage: () => void;
+  reorderNodes: string;
 };

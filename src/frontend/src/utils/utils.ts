@@ -25,6 +25,8 @@ import { FlowState } from "../types/tabs";
 import { isErrorLog } from "../types/utils/typeCheckingUtils";
 import { parseString } from "./stringManipulation";
 
+export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
 export function classNames(...classes: Array<string>): string {
   return classes.filter(Boolean).join(" ");
 }
