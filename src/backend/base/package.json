@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "dev:backend": "cd ../../../ && uv run langflow run"
+  }
+}
