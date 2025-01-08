@@ -1,4 +1,4 @@
-import { NODE_SPACING } from "@/constants/constants";
+import { NODE_HEIGHT, NODE_SPACING, NODE_WIDTH } from "@/constants/constants";
 import { AllNodeType, EdgeType } from "@/types/flow";
 import ELK from "elkjs/lib/elk.bundled.js";
 import { cloneDeep } from "lodash";
@@ -19,14 +19,16 @@ export const getLayoutedNodes = async (
   const elkGraph = {
     id: "root",
     layoutOptions,
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: node.width,
-      height: node.height,
-      targetPosition: "left",
-      sourcePosition: "right",
-      labels: [{ text: node.id }],
-    })),
+    children: nodes.map((node) => {
+      return {
+        id: node.id,
+        width: node.width || node.measured?.width || NODE_WIDTH,
+        height: node.height || node.measured?.height || NODE_HEIGHT,
+        targetPosition: "left",
+        sourcePosition: "right",
+        labels: [{ text: node.id }],
+      };
+    }),
     edges: edges.map((edge) => ({
       id: edge.id,
       sources: [edge.source],
