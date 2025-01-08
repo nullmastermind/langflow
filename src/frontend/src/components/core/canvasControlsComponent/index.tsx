@@ -24,6 +24,7 @@ type CustomControlButtonProps = {
   backgroundClasses?: string;
   iconClasses?: string;
   testId?: string;
+  strokeWidth?: number;
 };
 
 export const CustomControlButton = ({
@@ -34,6 +35,7 @@ export const CustomControlButton = ({
   backgroundClasses,
   iconClasses,
   testId,
+  strokeWidth,
 }: CustomControlButtonProps): JSX.Element => {
   return (
     <ControlButton
@@ -49,6 +51,7 @@ export const CustomControlButton = ({
             name={iconName}
             aria-hidden="true"
             className={cn("scale-150 text-muted-foreground", iconClasses)}
+            strokeWidth={strokeWidth}
           />
         </div>
       </ShadTooltip>

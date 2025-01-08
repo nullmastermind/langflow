@@ -588,6 +588,7 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
                     }}
                     iconClasses="text-primary"
                     testId="reorder_nodes"
+                    strokeWidth={1}
                   />
                   <CustomControlButton
                     iconName="sticky-note"
@@ -603,6 +604,7 @@ export default function Page({ view }: { view?: boolean }): JSX.Element {
                     }}
                     iconClasses="text-primary"
                     testId="add_note"
+                    strokeWidth={1}
                   />
                 </CanvasControls>
                 <FlowToolbar />
