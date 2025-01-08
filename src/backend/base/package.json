@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "dev:backend": "cd ../../../ && uv run langflow run --env-file src/backend/base/.env"
+    "dev:backend": "cd ../../../ && uv run langflow run"
   }
 }
