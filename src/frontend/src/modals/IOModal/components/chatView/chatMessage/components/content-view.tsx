@@ -36,7 +36,7 @@ export const ErrorView = ({
               <LogoIcon />
               <div className="flex items-center">
                 <TextShimmer className="" duration={1}>
-                  Flow running...
+                  Thinking...
                 </TextShimmer>
               </div>
             </motion.div>
