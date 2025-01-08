@@ -24,6 +24,7 @@ import {
 import {
   CODE_PROMPT_DIALOG_SUBTITLE,
   EDIT_CODE_TITLE,
+  MODAL_SIZE,
 } from "../../constants/constants";
 import useAlertStore from "../../stores/alertStore";
 import { useDarkStore } from "../../stores/darkStore";
@@ -191,8 +192,8 @@ export default function CodeAreaModal({
         } else {
           if (
             !(
-              codeRef.current?.editor.completer.popup &&
-              codeRef.current?.editor.completer.popup.isOpen
+              (codeRef.current?.editor.completer as any).popup &&
+              (codeRef.current?.editor.completer as any).popup.isOpen
             )
           ) {
             setOpenConfirmation(true);
@@ -201,7 +202,7 @@ export default function CodeAreaModal({
       }}
       open={open}
       setOpen={setOpen}
-      size="x-large"
+      size={MODAL_SIZE}
     >
       <BaseModal.Trigger>{children}</BaseModal.Trigger>
       <BaseModal.Header description={CODE_PROMPT_DIALOG_SUBTITLE}>

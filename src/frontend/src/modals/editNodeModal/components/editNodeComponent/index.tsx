@@ -21,13 +21,13 @@ export function EditNodeComponent({
   hideVisibility?: boolean;
 }) {
   const rowData = useRowData(nodeClass, open);
-
   const columnDefs: ColDef[] = useColumnDefs(
     nodeId,
     open,
     isTweaks,
     hideVisibility,
   );
+
   return useMemo(
     () => (
       <div className="flex h-full flex-col">
@@ -39,6 +39,7 @@ export function EditNodeComponent({
               tooltipShowDelay={0.5}
               columnDefs={columnDefs}
               rowData={rowData}
+              rowHeight={80}
             />
           )}
         </div>

@@ -1,3 +1,4 @@
+import { MODAL_SIZE } from "@/constants/constants";
 import { APIClassType } from "@/types/api";
 import { customStringify } from "@/utils/reactflowUtils";
 import { useEffect, useState } from "react";
@@ -31,7 +32,7 @@ const EditNodeModal = ({
   }, [data.node]);
 
   return (
-    <BaseModal key={data.id} open={open} setOpen={setOpen} size="x-large">
+    <BaseModal key={data.id} open={open} setOpen={setOpen} size={MODAL_SIZE}>
       <BaseModal.Trigger>
         <></>
       </BaseModal.Trigger>

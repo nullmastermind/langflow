@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import { MODAL_SIZE } from "@/constants/constants";
 import {
   useDeleteMessages,
   useGetMessagesQuery,
@@ -254,7 +255,7 @@ export default function IOModal({
       disable={disable}
       type={isPlayground ? "full-screen" : undefined}
       onSubmit={() => sendMessage({ repeat: 1 })}
-      size="x-large"
+      size={MODAL_SIZE}
       className="!rounded-[12px] p-0"
     >
       <BaseModal.Trigger>{children}</BaseModal.Trigger>

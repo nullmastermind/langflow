@@ -16,6 +16,7 @@ import {
   EDIT_TEXT_PLACEHOLDER,
   INVALID_CHARACTERS,
   MAX_WORDS_HIGHLIGHT,
+  MODAL_SIZE,
   PROMPT_DIALOG_SUBTITLE,
   regexHighlight,
 } from "../../constants/constants";
@@ -212,7 +213,7 @@ export default function PromptModal({
       onChangeOpenModal={(open) => {}}
       open={modalOpen}
       setOpen={setModalOpen}
-      size="x-large"
+      size={MODAL_SIZE}
     >
       <BaseModal.Trigger disable={disabled} asChild>
         {children}

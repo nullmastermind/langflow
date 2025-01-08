@@ -1,6 +1,7 @@
 import IconComponent from "@/components/common/genericIconComponent";
 import PaginatorComponent from "@/components/common/paginatorComponent";
 import TableComponent from "@/components/core/parameterRenderComponent/components/tableComponent";
+import { MODAL_SIZE } from "@/constants/constants";
 import { useGetTransactionsQuery } from "@/controllers/API/queries/transactions";
 import useFlowsManagerStore from "@/stores/flowsManagerStore";
 import { FlowSettingsPropsType } from "@/types/components";
@@ -48,7 +49,7 @@ export default function FlowLogsModal({
   }, []);
 
   return (
-    <BaseModal open={open} setOpen={setOpen} size="x-large">
+    <BaseModal open={open} setOpen={setOpen} size={MODAL_SIZE}>
       <BaseModal.Header description="Inspect component executions.">
         <div className="flex w-full justify-between">
           <div className="flex h-fit w-32 items-center">

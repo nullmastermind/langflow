@@ -1000,3 +1000,22 @@ export const DEFAULT_PLACEHOLDER = "Type something...";
 export const DEFAULT_TOOLSET_PLACEHOLDER = "Used as a tool";
 
 export const NODE_SPACING = 64;
+
+export const MODAL_SIZE:
+  | "x-small"
+  | "smaller"
+  | "small"
+  | "medium"
+  | "medium-tall"
+  | "large"
+  | "three-cards"
+  | "large-thin"
+  | "large-h-full"
+  | "templates"
+  | "small-h-full"
+  | "medium-h-full"
+  | "md-thin"
+  | "sm-thin"
+  | "smaller-h-full"
+  | "medium-log"
+  | "x-large" = "medium-tall";

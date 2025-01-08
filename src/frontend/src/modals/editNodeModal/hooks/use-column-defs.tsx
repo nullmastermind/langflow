@@ -1,3 +1,4 @@
+import ShadTooltip from "@/components/common/shadTooltipComponent";
 import TableAdvancedToggleCellRender from "@/components/core/parameterRenderComponent/components/tableComponent/components/tableAdvancedToggleCellRender";
 import TableNodeCellRender from "@/components/core/parameterRenderComponent/components/tableComponent/components/tableNodeCellRender";
 import { ColDef, ValueGetterParams } from "ag-grid-community";
@@ -12,7 +13,7 @@ const useColumnDefs = (
   const columnDefs: ColDef[] = useMemo(() => {
     const colDefs: ColDef[] = [
       {
-        headerName: "Field Name",
+        headerName: "Parameter",
         field: "display_name",
         valueGetter: (params) => {
           const templateParam = params.data;
@@ -23,20 +24,24 @@ const useColumnDefs = (
           );
         },
         wrapText: true,
-        autoHeight: true,
         flex: 1,
         resizable: false,
         cellClass: "no-border",
-      },
-      {
-        headerName: "Description",
-        field: "info",
-        tooltipField: "info",
-        wrapText: true,
-        autoHeight: true,
-        flex: 2,
-        resizable: false,
-        cellClass: "no-border",
+        width: 10000,
+        cellRenderer(props: any) {
+          return (
+            <div>
+              <div className="line-clamp-1 whitespace-nowrap">
+                {props.value}
+              </div>
+              <ShadTooltip content={props.data?.info} styleClasses="z-50">
+                <div className="line-clamp-2 text-xs opacity-60">
+                  {props.data?.info}
+                </div>
+              </ShadTooltip>
+            </div>
+          );
+        },
       },
       {
         headerName: "Value",
@@ -53,7 +58,6 @@ const useColumnDefs = (
           params.event.key === "a" &&
           (params.event.ctrlKey || params.event.metaKey),
         minWidth: 340,
-        autoHeight: true,
         flex: 1,
         resizable: false,
         cellClass: "no-border",

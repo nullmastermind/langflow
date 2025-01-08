@@ -8,7 +8,7 @@ import "ace-builds/src-noconflict/theme-twilight";
 import { ReactNode, useEffect, useState } from "react";
 import IconComponent from "../../components/common/genericIconComponent";
 import CodeTabsComponent from "../../components/core/codeTabsComponent";
-import { EXPORT_CODE_DIALOG } from "../../constants/constants";
+import { EXPORT_CODE_DIALOG, MODAL_SIZE } from "../../constants/constants";
 import { useTweaksStore } from "../../stores/tweaksStore";
 import { FlowType } from "../../types/flow/index";
 import BaseModal from "../baseModal";
@@ -43,7 +43,7 @@ export default function ApiModal({
   }, [open]);
 
   return (
-    <BaseModal open={open} setOpen={setOpen} size="x-large">
+    <BaseModal open={open} setOpen={setOpen} size={MODAL_SIZE}>
       <BaseModal.Trigger asChild>{children}</BaseModal.Trigger>
       <BaseModal.Header description={EXPORT_CODE_DIALOG}>
         <span className="pr-2">API</span>

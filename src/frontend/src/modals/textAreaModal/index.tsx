@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Textarea } from "../../components/ui/textarea";
 import {
   EDIT_TEXT_PLACEHOLDER,
+  MODAL_SIZE,
   TEXT_DIALOG_SUBTITLE,
 } from "../../constants/constants";
 import { textModalPropsType } from "../../types/components";
@@ -33,7 +34,7 @@ export default function ComponentTextModal({
       onChangeOpenModal={(open) => {}}
       open={modalOpen}
       setOpen={setModalOpen}
-      size="x-large"
+      size={MODAL_SIZE}
     >
       <BaseModal.Trigger disable={disabled} asChild>
         {children}
