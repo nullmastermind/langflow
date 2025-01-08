@@ -17,13 +17,13 @@ const findConnectedGroups = (
 ): Set<string>[] => {
   const groups: Set<string>[] = [];
   const visited = new Set<string>();
+  const singleNodes = new Set<string>();
 
-  // Helper function for DFS
+  // First pass: find connected components
   const dfs = (nodeId: string, group: Set<string>) => {
     visited.add(nodeId);
     group.add(nodeId);
 
-    // Find all connected nodes through edges
     edges.forEach((edge) => {
       if (edge.source === nodeId && !visited.has(edge.target)) {
         dfs(edge.target, group);
@@ -34,16 +34,49 @@ const findConnectedGroups = (
     });
   };
 
-  // Find all connected components
+  // Find all connected components first
   nodes.forEach((node) => {
     if (!visited.has(node.id)) {
-      const newGroup = new Set<string>();
-      dfs(node.id, newGroup);
-      groups.push(newGroup);
+      // Check if node is connected to any edges
+      const isConnected = edges.some(
+        (edge) => edge.source === node.id || edge.target === node.id,
+      );
+
+      if (isConnected) {
+        const newGroup = new Set<string>();
+        dfs(node.id, newGroup);
+        groups.push(newGroup);
+      } else {
+        singleNodes.add(node.id);
+      }
     }
   });
 
+  // Add single nodes as the last group if there are any
+  if (singleNodes.size > 0) {
+    groups.push(singleNodes);
+  }
+
   return groups;
+};
+
+// Add these types at the top
+type NodesByX = {
+  [key: number]: Array<{
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>;
+};
+
+type ElkNode = {
+  id: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
 };
 
 // uses elkjs to give each node a layouted position
@@ -51,33 +84,52 @@ export const getLayoutedNodes = async (
   nodes: AllNodeType[],
   edges: EdgeType[],
 ): Promise<AllNodeType[]> => {
-  // Find connected groups
   const groups = findConnectedGroups(nodes, edges);
-
-  // Process each group separately
   let currentY = 0;
   const processedNodes = cloneDeep(nodes);
 
-  for (const group of groups) {
-    // Filter nodes and edges for this group
+  for (const [groupIndex, group] of Array.from(groups.entries())) {
     const groupNodes = nodes.filter((node) => group.has(node.id));
-    const groupEdges = edges.filter(
+    const isLastGroup = groupIndex === groups.length - 1;
+    const isSingleNodesGroup =
+      isLastGroup &&
+      !edges.some((edge) => group.has(edge.source) && group.has(edge.target));
+
+    // Create layout edges - including dummy edges for single nodes
+    let groupEdges = edges.filter(
       (edge) => group.has(edge.source) && group.has(edge.target),
     );
 
+    if (isSingleNodesGroup && groupNodes.length > 0) {
+      // Create dummy edges connecting single nodes in a chain
+      const dummyEdges: EdgeType[] = [];
+      for (let i = 0; i < groupNodes.length - 1; i++) {
+        dummyEdges.push({
+          id: `dummy-${i}`,
+          source: groupNodes[i].id,
+          target: groupNodes[i + 1].id,
+        });
+      }
+      groupEdges = dummyEdges;
+    }
+
     const elkGraph = {
       id: "root",
-      layoutOptions,
-      children: groupNodes.map((node) => {
-        return {
-          id: node.id,
-          width: node.width || node.measured?.width || NODE_WIDTH,
-          height: node.height || node.measured?.height || NODE_HEIGHT,
-          targetPosition: "left",
-          sourcePosition: "right",
-          labels: [{ text: node.id }],
-        };
-      }),
+      layoutOptions: {
+        ...layoutOptions,
+        // For single nodes group, arrange them in a more compact way
+        ...(isSingleNodesGroup && {
+          "elk.spacing.nodeNode": (NODE_SPACING / 2).toString(),
+        }),
+      },
+      children: groupNodes.map((node) => ({
+        id: node.id,
+        width: node.width || node.measured?.width || NODE_WIDTH,
+        height: node.height || node.measured?.height || NODE_HEIGHT,
+        targetPosition: "left",
+        sourcePosition: "right",
+        labels: [{ text: node.id }],
+      })),
       edges: groupEdges.map((edge) => ({
         id: edge.id,
         sources: [edge.source],
@@ -87,35 +139,32 @@ export const getLayoutedNodes = async (
 
     const layout = await elk.layout(elkGraph);
 
-    // Find group boundaries
-    let groupMinY = Infinity;
-    let groupMaxY = -Infinity;
-    let groupHeight = 0;
-
-    layout.children?.forEach((child) => {
-      if (typeof child.y === "number") {
-        groupMinY = Math.min(groupMinY, child.y);
-        groupMaxY = Math.max(groupMaxY, child.y + (child.height || 0));
-      }
-    });
-
-    groupHeight = groupMaxY - groupMinY;
-
     // Position nodes within the group
-    const nodesByX = {};
-    layout.children?.forEach((child) => {
+    const nodesByX: NodesByX = {};
+    layout.children?.forEach((child: ElkNode) => {
       if (typeof child.x !== "number") return;
       const xCoord = Math.round(child.x);
       if (!nodesByX[xCoord]) {
         nodesByX[xCoord] = [];
       }
-      nodesByX[xCoord].push(child);
+      nodesByX[xCoord].push({
+        id: child.id,
+        x: child.x,
+        y: child.y || 0,
+        width: child.width || NODE_WIDTH,
+        height: child.height || NODE_HEIGHT,
+      });
     });
 
+    // Handle empty nodesByX case
+    if (Object.keys(nodesByX).length === 0) {
+      continue;
+    }
+
     // Update node positions with baseline offset
-    Object.values(nodesByX).forEach((nodesAtX: any) => {
+    Object.values(nodesByX).forEach((nodesAtX) => {
       let localY = 0;
-      nodesAtX.forEach((child: any) => {
+      nodesAtX.forEach((child) => {
         const index = processedNodes.findIndex((e) => e.id === child.id);
         if (index > -1) {
           processedNodes[index].position = {
@@ -127,16 +176,14 @@ export const getLayoutedNodes = async (
       });
     });
 
-    // Update currentY for next group using the maximum height of this group
+    // Calculate next group position with safe empty array handling
     const maxLocalY = Math.max(
-      ...Object.values(nodesByX).map((nodes: any) =>
-        nodes.reduce(
-          (sum: number, node: any) => sum + (node.height || 0) + NODE_SPACING,
-          0,
-        ),
+      0,
+      ...Object.values(nodesByX).map((nodes) =>
+        nodes.reduce((sum, node) => sum + node.height + NODE_SPACING, 0),
       ),
     );
-    currentY += maxLocalY + NODE_SPACING * 2; // Add double spacing between groups
+    currentY += maxLocalY + NODE_SPACING * 2;
   }
 
   return processedNodes;
