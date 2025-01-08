@@ -84,9 +84,13 @@ export const getLayoutedNodes = async (
   nodes: AllNodeType[],
   edges: EdgeType[],
 ): Promise<AllNodeType[]> => {
-  const groups = findConnectedGroups(nodes, edges);
+  // Filter out note nodes from layout processing
+  const nonNoteNodes = nodes.filter((node) => node.type !== "noteNode");
+  const noteNodes = nodes.filter((node) => node.type === "noteNode");
+  
+  const groups = findConnectedGroups(nonNoteNodes, edges);
   let currentY = 0;
-  const processedNodes = cloneDeep(nodes);
+  const processedNodes = cloneDeep(nonNoteNodes);
 
   for (const [groupIndex, group] of Array.from(groups.entries())) {
     const groupNodes = nodes.filter((node) => group.has(node.id));
@@ -186,5 +190,6 @@ export const getLayoutedNodes = async (
     currentY += maxLocalY + NODE_SPACING * 2;
   }
 
-  return processedNodes;
+  // Add note nodes back to the result without changing their positions
+  return [...processedNodes, ...cloneDeep(noteNodes)];
 };
